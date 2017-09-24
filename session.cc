@@ -9,7 +9,9 @@ namespace wm {
 
 void Session::Run()
 {
-  message::ReadMessage(socket_, read_msg_, std::bind(&Session::OnRead, this, std::placeholders::_1));
+  message::ReadMessage(socket_, read_msg_,
+                       std::bind(&Session::OnRead, this, std::placeholders::_1),
+                       [](boost::system::error_code err) { });
 }
 
 void Session::OnRead(Message& msg)
@@ -32,7 +34,7 @@ void Session::OnRead(Message& msg)
     widget_info_.bitmap_.reset(reinterpret_cast<uint32_t*>(data.release()));
   }
   
-  message::ReadMessage(socket_, read_msg_, std::bind(&Session::OnRead, this, std::placeholders::_1));
+  message::ReadMessage(socket_, read_msg_, std::bind(&Session::OnRead, this, std::placeholders::_1),[](boost::system::error_code err) { });
 
 }
 

@@ -19,7 +19,7 @@ Client::~Client()
 void Client::HandleConnect(const boost::system::error_code& error)
 {
   message::ReadMessage(socket_, read_msg_,
-                       std::bind(&Client::OnReadMessage, this, std::placeholders::_1));
+                       std::bind(&Client::OnReadMessage, this, std::placeholders::_1), [](boost::system::error_code err) { });
   SendInitMessage();
 
 }
@@ -59,7 +59,7 @@ void Client::OnReadMessage(Message& message)
   }
   
   message::ReadMessage(socket_, read_msg_,
-                       std::bind(&Client::OnReadMessage, this, std::placeholders::_1));  
+                       std::bind(&Client::OnReadMessage, this, std::placeholders::_1), [](boost::system::error_code err) {});  
 }
 
 void Client::Run()

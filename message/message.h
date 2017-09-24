@@ -4,6 +4,8 @@
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
 
+#include <iostream>
+
 namespace wm {
 
 enum class MessageType
@@ -54,23 +56,34 @@ namespace message {
 
 
 inline void OnReadMessageData(Message& msg, std::function<void(Message&)> func,
+                              std::function<void(boost::system::error_code)> err_func,
                               const boost::system::error_code& error)
 {
+  if(error) {
+    err_func(error);
+  }
   func(msg);
 }
 
 
 inline void OnReadMessageHeader(boost::asio::ip::tcp::socket& socket, Message& msg,
-                         std::function<void(Message&)> func,
-                         const boost::system::error_code& error)
+                                std::function<void(Message&)> func,
+                                
+                                std::function<void(boost::system::error_code)> err_func,
+                                const boost::system::error_code& error)
 {
+  if( error ) {
+    std::cout << "ERROR!" << error << std::endl;
+    err_func(error);
+    return;
+  }
   if( msg.GetHeader()->data_size_ > 0 ) {
     msg.AllocData();
   
     boost::asio::async_read(socket,
                             boost::asio::buffer(msg.GetData(), msg.GetHeader()->data_size_),
                             boost::bind(&OnReadMessageData,
-                                        std::ref(msg), func, boost::asio::placeholders::error));
+                                        std::ref(msg), func, err_func, boost::asio::placeholders::error));
   }
   else {
     func(msg);
@@ -79,12 +92,14 @@ inline void OnReadMessageHeader(boost::asio::ip::tcp::socket& socket, Message& m
 }
 
 inline void ReadMessage(boost::asio::ip::tcp::socket& socket, Message& msg,
-                 std::function<void(Message&)> func)
+                        std::function<void(Message&)> func,
+                        std::function<void(boost::system::error_code)> err_func)
 {
   auto b = boost::bind(&OnReadMessageHeader,
                        std::ref(socket),
                        std::ref(msg),
                        func,
+                       err_func,
                        boost::asio::placeholders::error);
   boost::asio::async_read(socket,
                           boost::asio::buffer(msg.GetHeader(),
