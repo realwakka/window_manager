@@ -49,6 +49,7 @@ class Client
   void OnKeyEvent(input_event& event);
 
   void SendInitMessage();
+  void SendSchedulePaint();
 
  private:
   boost::asio::io_service io_service_;

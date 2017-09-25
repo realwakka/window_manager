@@ -39,6 +39,17 @@ void Client::SendInitMessage()
   
   message::WriteMessage(socket_, msg, std::bind(&Client::OnWriteMessage, this, std::placeholders::_1));
 
+  SendSchedulePaint();
+
+}
+
+void Client::SendSchedulePaint()
+{
+  Message msg;
+  msg.GetHeader()->data_type_ = MessageType::SchedulePaint;
+  msg.GetHeader()->data_size_ = 0;
+  
+  message::WriteMessage(socket_, msg, std::bind(&Client::OnWriteMessage, this, std::placeholders::_1));
 }
 
 void Client::OnWriteMessage(boost::system::error_code err)

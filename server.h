@@ -8,6 +8,7 @@
 #include <functional>
 
 #include "session.h"
+#include "input_manager.h"
 #include <linux/input.h>
 
 namespace wm {
@@ -33,10 +34,12 @@ class Server
   void Paint();
 
   void OnKeyEvent(boost::system::error_code err);
-
+  void OnInputEvent(input_event& event);
+  
  private:
   void StartAccept();
   std::vector<std::shared_ptr<Session>> session_list_;
+  std::shared_ptr<Session> focused_session_;
   
   boost::asio::io_service io_service_;
   boost::asio::deadline_timer timer_;
@@ -44,9 +47,10 @@ class Server
   boost::asio::ip::tcp::socket socket_;
 
   DrmInfo drm_info_;
+  InputManager input_manager_;
 
-  boost::asio::posix::stream_descriptor key_desc_;
-  input_event input_event_;
+  //boost::asio::posix::stream_descriptor key_desc_;
+  //input_event input_event_;
 };
 
 

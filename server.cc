@@ -8,9 +8,11 @@ namespace wm {
 
 Server::Server()
     : timer_(io_service_, boost::posix_time::seconds(1)),
-      acceptor_(io_service_, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), 1234)),
+      acceptor_(io_service_,
+                boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), 1234)),
       socket_(io_service_),
-      key_desc_(io_service_)
+      //key_desc_(io_service_),
+      input_manager_(io_service_, *this)
 {
   StartAccept();
   drm_info_.cnt_ = KernelModelSetting(drm_info_.fb_base_,
@@ -18,31 +20,33 @@ Server::Server()
                                       drm_info_.fb_h_);
 
   SetTimer();
-
-  std::string key_path = "/dev/input/event0";
-
-  auto key_fd = open(key_path.c_str(), O_RDONLY);
-  key_desc_.assign(key_fd);
-  boost::asio::async_read(key_desc_,
-                          boost::asio::buffer(&input_event_, sizeof(input_event_)),
-                          boost::bind(&Server::OnKeyEvent,
-                                      this, boost::asio::placeholders::error));
+  input_manager_.OpenInput();
 }
 
 void Server::OnKeyEvent(boost::system::error_code err)
 {
-  boost::asio::async_read(key_desc_,
-                          boost::asio::buffer(&input_event_, sizeof(input_event_)),
-                          boost::bind(&Server::OnKeyEvent,
-                                      this, boost::asio::placeholders::error));
+  // boost::asio::async_read(key_desc_,
+  //                         boost::asio::buffer(&input_event_, sizeof(input_event_)),
+  //                         boost::bind(&Server::OnKeyEvent,
+  //                                     this, boost::asio::placeholders::error));
 
-  if( input_event_.type == 1 ) {
+  // if( input_event_.type == 1 ) {
+  //   if( session_list_.empty() == false ) {
+  //     session_list_.front()->OnKey(input_event_);
+  //   }
+  
+  // }
+}
+
+void Server::OnInputEvent(input_event& event)
+{
+
+  if( event.type == 1 ) {
     if( session_list_.empty() == false ) {
-      session_list_.front()->OnKey(input_event_);
+      session_list_.front()->OnKey(event);
     }
   
   }
-  
 }
 
 void Server::Run()

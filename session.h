@@ -3,8 +3,10 @@
 
 #include <linux/input.h>
 #include <boost/asio.hpp>
+#include <boost/interprocess/shared_memory_object.hpp>
 
 #include "message/message.h"
+
 
 namespace wm {
 
@@ -46,6 +48,7 @@ class Session
   boost::asio::deadline_timer timer_;
   Message read_msg_;
   WidgetInfo widget_info_;
+  boost::interprocess::shared_memory_object shm_obj_;
   
 };
 

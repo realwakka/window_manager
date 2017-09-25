@@ -14,6 +14,7 @@ enum class MessageType
   PaintRequest = 2,
   PaintResponse = 3,
   Keyboard = 4,
+  SchedulePaint = 5,
 };
 
 struct MessageHeader
