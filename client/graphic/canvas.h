@@ -2,7 +2,6 @@
 #define WM_CANVAS_H_
 
 #include <memory>
-
 #include <boost/interprocess/shared_memory_object.hpp>
 
 namespace wm {

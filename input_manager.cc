@@ -53,6 +53,13 @@ void InputDevice::Open(const std::string& path)
 
 void InputDevice::OnRead(boost::system::error_code error)
 {
+  std::cout << "key event!!!!" << std::endl;
+  std::cout << input_event_.type << std::endl;
+  std::cout << input_event_.code << std::endl;
+  std::cout << input_event_.value << std::endl;
+
+
+  
   server_.OnInputEvent(input_event_);
   
   boost::asio::async_read(desc_,

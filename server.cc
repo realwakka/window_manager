@@ -39,7 +39,7 @@ void Server::OnKeyEvent(boost::system::error_code err)
 
 void Server::OnInputEvent(input_event& event)
 {
-
+  
   if( event.type == 1 ) {
     if( session_list_.empty() == false ) {
       session_list_.front()->OnKey(event);
@@ -55,6 +55,7 @@ void Server::Run()
 
 void Server::Paint()
 {
+  cursor_.Paint(drm_info_);
   for (int j=0;j<drm_info_.cnt_;j++) {
     int col=0x00ffffff;
     for (int y=0;y<drm_info_.fb_h_[j];y++)
