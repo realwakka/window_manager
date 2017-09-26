@@ -7,6 +7,8 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 
+#include <boost/interprocess/mapped_region.hpp>
+
 #include "server.h"
 
 namespace wm {
@@ -78,14 +80,17 @@ void Session::HandleWrite(const boost::system::error_code& error)
 void Session::Paint(DrmInfo& drm_info)
 {
   //std::cout << "write paint req" << std::endl;
-  if( widget_info_.bitmap_ != nullptr ) {
+  
+  boost::interprocess::mapped_region region(shm_obj_, boost::interprocess::read_only);
+  auto ptr = reinterpret_cast<uint32_t*>(region.get_address());
+  if( ptr != nullptr ) {
     for (int j=0;j<drm_info.cnt_;j++) {
       for (int y=0 ; y<widget_info_.height_ ;y++)
         for (int x=0 ; x<widget_info_.width_ ; x++) {
           int sx = x+widget_info_.x_;
           int sy = y+widget_info_.y_;
           
-          uint32_t col = widget_info_.bitmap_.get()[y*widget_info_.width_+x];
+          uint32_t col = ptr[y*widget_info_.width_+x];
           int location=sy*(drm_info.fb_w_[j]) + sx;
           *(((uint32_t*)drm_info.fb_base_[j])+location)=col;
         }

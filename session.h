@@ -20,7 +20,7 @@ class WidgetInfo
   int y_;
   int width_;
   int height_;
-  std::unique_ptr<uint32_t> bitmap_;
+  //std::unique_ptr<uint32_t> bitmap_;
   void* shm_;
 };
 
@@ -50,8 +50,8 @@ class Session
   boost::asio::deadline_timer timer_;
   Message read_msg_;
   WidgetInfo widget_info_;
-  boost::interprocess::shared_memory_object shm_obj_;
   std::string uuid_;
+  boost::interprocess::shared_memory_object shm_obj_;
   Server& server_;
   
 };

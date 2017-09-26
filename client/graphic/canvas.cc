@@ -19,8 +19,12 @@ SharedMemoryCanvasDelegate::~SharedMemoryCanvasDelegate()
 void SharedMemoryCanvasDelegate::SetColor(int color)
 {
   boost::interprocess::mapped_region region(shm_obj_, boost::interprocess::read_write);
-  std::fill_n(reinterpret_cast<int*>(region.get_address())
-              , color, region.get_size() / sizeof(int));
+  reinterpret_cast<int*>(region.get_address());
+  for(int i=0 ; i< region.get_size() / sizeof(int) ; ++i ) {
+    reinterpret_cast<int*>(region.get_address())[i] = color;
+  }
+  // std::fill_n(reinterpret_cast<int*>(region.get_address())
+  //             , color, region.get_size() / sizeof(int));
 }
 
 
