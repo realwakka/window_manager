@@ -1,11 +1,26 @@
 #include "session.h"
 
 #include <iostream>
+
 #include <boost/bind.hpp>
+#include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_io.hpp>
+#include <boost/uuid/uuid_generators.hpp>
 
 #include "server.h"
 
 namespace wm {
+
+Session::Session(boost::asio::io_service& io_service, Server& server)
+    : io_service_(io_service),
+      socket_(io_service),
+      timer_(io_service, boost::posix_time::seconds(1)),
+      uuid_(boost::uuids::to_string(boost::uuids::random_generator()())),
+      server_(server),
+      shm_obj_( boost::interprocess::create_only, uuid_.c_str(), boost::interprocess::read_write )
+{
+}
+
 
 void Session::Run()
 {
@@ -24,14 +39,26 @@ void Session::OnRead(Message& msg)
     widget_info_.width_ = message->width_;
     widget_info_.height_ = message->height_;
 
-    widget_info_.bitmap_.reset(new uint32_t[widget_info_.width_ * widget_info_.height_]);
+    // widget_info_.bitmap_.reset(new uint32_t[widget_info_.width_ * widget_info_.height_]);
+    shm_obj_.truncate(sizeof(int) * message->width_ * message->height_);
     
-  }
-  else if( msg.GetHeader()->data_type_ == MessageType::PaintResponse ) {
+  } else if( msg.GetHeader()->data_type_ == MessageType::PaintResponse ) {
+  
     std::cout << "received paint response" << std::endl;
+    server_.Paint();
     
-    auto data = msg.MoveData();
-    widget_info_.bitmap_.reset(reinterpret_cast<uint32_t*>(data.release()));
+    // auto data = msg.MoveData();
+    // widget_info_.bitmap_.reset(reinterpret_cast<uint32_t*>(data.release()));
+  } else if( msg.GetHeader()->data_type_ == MessageType::SchedulePaint ) {
+    Message msg;
+    msg.GetHeader()->data_type_ = MessageType::PaintRequest;
+    msg.GetHeader()->data_size_ = uuid_.length() + 1;
+
+    msg.AllocData();
+    uuid_.copy(msg.GetData(), uuid_.length() + 1);
+
+    message::WriteMessage(socket_, msg, std::bind(&Session::HandleWrite, this, std::placeholders::_1));
+
   }
   
   message::ReadMessage(socket_, read_msg_, std::bind(&Session::OnRead, this, std::placeholders::_1),[](boost::system::error_code err) { });
@@ -50,13 +77,7 @@ void Session::HandleWrite(const boost::system::error_code& error)
 
 void Session::Paint(DrmInfo& drm_info)
 {
-  std::cout << "write paint req" << std::endl;
-  
-  Message msg;
-  msg.GetHeader()->data_type_ = MessageType::PaintRequest;
-  msg.GetHeader()->data_size_ = 0;
-  message::WriteMessage(socket_, msg, std::bind(&Session::HandleWrite, this, std::placeholders::_1));
-  
+  //std::cout << "write paint req" << std::endl;
   if( widget_info_.bitmap_ != nullptr ) {
     for (int j=0;j<drm_info.cnt_;j++) {
       for (int y=0 ; y<widget_info_.height_ ;y++)

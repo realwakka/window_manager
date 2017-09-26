@@ -3,6 +3,8 @@
 #include <iostream>
 #include <boost/bind.hpp>
 
+#include "graphic/canvas.h"
+
 namespace wm {
 
 Client::Client() : socket_(io_service_), work_(io_service_)
@@ -82,14 +84,19 @@ void Client::OnPaint()
 {
   std::cout << "received paint req" << std::endl;
 
-  widget_.OnPaint();
+  std::string shm_path = read_msg_.GetData();
+
+  auto canvas = CreateCanvasSharedMemory(shm_path);
+  
+  widget_.OnPaint(canvas);
   
   Message msg;
   msg.GetHeader()->data_type_ = MessageType::PaintResponse;
-  msg.GetHeader()->data_size_ = widget_.width_ * widget_.height_ * sizeof(uint32_t);
-  msg.SetData(reinterpret_cast<char*>(widget_.bitmap_.release()));
-
-  widget_.AllocBitmap();
+  msg.GetHeader()->data_size_ = 0;
+  
+  // msg.GetHeader()->data_size_ = widget_.width_ * widget_.height_ * sizeof(uint32_t);
+  //msg.SetData(reinterpret_cast<char*>(widget_.bitmap_.release()));
+  //widget_.AllocBitmap();
 
   message::WriteMessage(socket_, msg, std::bind(&Client::OnWriteMessage, this, std::placeholders::_1));
 }

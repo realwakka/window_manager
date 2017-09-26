@@ -1,0 +1,34 @@
+#include "client/graphic/canvas.h"
+
+namespace wm {
+
+SharedMemoryCanvasDelegate::SharedMemoryCanvasDelegate(const std::string& path)
+    : shm_obj_(open_only, path.c_str() ,boost:interprocess::read_write)
+{
+  
+}
+SharedMemoryCanvasDelegate::~SharedMemoryCanvasDelegate()
+{
+}
+
+void SharedMemoryCanvasDelegate::SetColor(int color)
+{
+  
+}
+
+
+Canvas::Canvas()
+{}
+  
+Canvas::~Canvas()
+{}
+  
+
+void SetColor(int color)
+{
+  delegate_->SetColor(color);
+}
+   
+
+
+}  // wm

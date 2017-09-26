@@ -11,7 +11,6 @@ Server::Server()
       acceptor_(io_service_,
                 boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), 1234)),
       socket_(io_service_),
-      //key_desc_(io_service_),
       input_manager_(io_service_, *this)
 {
   StartAccept();
@@ -91,13 +90,18 @@ void Server::StartAccept()
 {
   acceptor_.async_accept(socket_,
                          [this] (const auto& err) {
-                           auto session = std::make_shared<Session>(io_service_);
+                           auto session = std::make_shared<Session>(io_service_, *this);
                            session_list_.emplace_back(session);
                            session->SetSocket(std::move(socket_));
                            session->Run();
                            std::cout << "accepted!!" << std::endl;
                            this->StartAccept();
                          });
+  
+}
+
+void Server::OnAccept(const auto& err)
+{
   
 }
 

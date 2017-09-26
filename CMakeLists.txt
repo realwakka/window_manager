@@ -11,12 +11,12 @@ include_directories(${CMAKE_SOURCE_DIR})
 
 set (CMAKE_CXX_STANDARD 14)
 
-add_library(el_server
+add_library(el_server SHARED
   server.cc
   session.cc
   input_manager.cc
   )
-target_link_libraries(el_server el_drm boost_system pthread boost_filesystem)
+target_link_libraries(el_server el_drm boost_system pthread boost_filesystem boost_mpi rt)
 
 add_executable(server_test main.cc)
 target_link_libraries(server_test el_server)

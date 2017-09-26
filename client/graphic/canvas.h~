@@ -1,0 +1,43 @@
+#ifndef WM_CANVAS_H_
+#define WM_CANVAS_H_
+
+#include <boost/interprocess/shared_memory_object.hpp>
+
+namespace wm {
+
+class CanvasDelegate
+{
+ public:
+  virtual void SetColor(int color) = 0;
+};
+
+
+class SharedMemoryCanvasDelegate
+{
+ public:
+  SharedMemoryCanvasDelegate(const std::string& path);
+  virtual ~SharedMemoryCanvasDelegate();
+
+  void SetColor(int color) override;
+
+ private:
+  boost::interprocess::shared_memory_object shm_obj_;
+};
+
+
+class Canvas
+{
+ public:
+  Canvas();
+  virtual ~Canvas();
+
+  void SetColor(int color) { delegate_->SetColor(color); }
+
+ private:
+  std::unique_ptr<CanvasDelegate*> delegate_;
+};
+
+
+}  // wm
+
+#endif /* WM_CANVAS_H_ */

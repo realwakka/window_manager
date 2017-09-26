@@ -35,9 +35,10 @@ class Server
 
   void OnKeyEvent(boost::system::error_code err);
   void OnInputEvent(input_event& event);
-  
+
  private:
   void StartAccept();
+  void OnAccept(const auto& err);
   std::vector<std::shared_ptr<Session>> session_list_;
   std::shared_ptr<Session> focused_session_;
   

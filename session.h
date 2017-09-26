@@ -11,6 +11,7 @@
 namespace wm {
 
 struct DrmInfo;
+class Server;
 
 class WidgetInfo
 {
@@ -20,16 +21,13 @@ class WidgetInfo
   int width_;
   int height_;
   std::unique_ptr<uint32_t> bitmap_;
+  void* shm_;
 };
 
 class Session
 {
  public:
-  Session(boost::asio::io_service& io_service)
-      : io_service_(io_service),
-        socket_(io_service),
-        timer_(io_service, boost::posix_time::seconds(1))
-  {}
+  Session(boost::asio::io_service& io_service, Server& server);
   virtual ~Session() {}
 
   boost::asio::ip::tcp::socket& GetSocket() { return socket_; }
@@ -42,6 +40,10 @@ class Session
   void Paint(DrmInfo& drm_info);
   void OnKey(input_event& ev);
 
+  std::string GetUuid() const { return uuid_; }
+  //const WidgetInfo& GetWidgetInfo() const { return WidgetInfo; }
+  
+
  private:
   boost::asio::io_service& io_service_;
   boost::asio::ip::tcp::socket socket_;
@@ -49,6 +51,8 @@ class Session
   Message read_msg_;
   WidgetInfo widget_info_;
   boost::interprocess::shared_memory_object shm_obj_;
+  std::string uuid_;
+  Server& server_;
   
 };
 
