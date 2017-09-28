@@ -12,7 +12,7 @@ class InputDevice
 {
  public:
   InputDevice(boost::asio::io_service& io_service, Server& server);
-  void Open(const std::string& path);
+  bool Open(const std::string& path);
   void OnRead(boost::system::error_code err);
 
  private:

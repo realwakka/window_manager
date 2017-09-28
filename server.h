@@ -9,6 +9,7 @@
 
 #include "session.h"
 #include "input_manager.h"
+#include "cursor.h"
 #include <linux/input.h>
 
 namespace wm {
@@ -21,26 +22,26 @@ struct DrmInfo
   int cnt_;
 };
 
-class Cursor
-{
- public:
-  Cursor() : x_(0), y_(0) {}
-  void Paint(DrmInfo& drm)
-  {
-    for (int j=0;j<drm.cnt_;j++) {
-      int col=0x0;
-      for (int y=y_;y<10;y++)
-        for (int x=x_;x<10;x++) {
-          int location=y*(drm.fb_w_[j]) + x;
-          *(((uint32_t*)drm.fb_base_[j])+location)=col;
-        }
-    }
+// class Cursor
+// {
+//  public:
+//   Cursor() : x_(0), y_(0) {}
+//   void Paint(DrmInfo& drm)
+//   {
+//     for (int j=0;j<drm.cnt_;j++) {
+//       int col=0x0;
+//       for (int y=y_;y<10;y++)
+//         for (int x=x_;x<10;x++) {
+//           int location=y*(drm.fb_w_[j]) + x;
+//           *(((uint32_t*)drm.fb_base_[j])+location)=col;
+//         }
+//     }
 
-  }
- private:
-  int x_;
-  int y_;
-};
+//   }
+//  private:
+//   int x_;
+//   int y_;
+// };
 
 class Server
 {

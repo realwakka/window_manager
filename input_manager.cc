@@ -30,15 +30,20 @@ InputDevice::InputDevice(boost::asio::io_service& io_service, Server& server)
 {
 }
 
-void InputDevice::Open(const std::string& path)
+bool InputDevice::Open(const std::string& path)
 {
   auto fd = open(path.c_str(), O_RDONLY);
-  desc_.assign(fd);
+  if( fd < 0 ) {
+    return false;
+  } else {
+    desc_.assign(fd);
   
-  boost::asio::async_read(desc_,
-                          boost::asio::buffer(&input_event_, sizeof(input_event_)),
-                          boost::bind(&InputDevice::OnRead,
-                                      this, boost::asio::placeholders::error));
+    boost::asio::async_read(desc_,
+                            boost::asio::buffer(&input_event_, sizeof(input_event_)),
+                            boost::bind(&InputDevice::OnRead,
+                                        this, boost::asio::placeholders::error));
+    return true;
+  }
 
   
   // if(HasSuffix(path, "event-kbd")) {
@@ -77,7 +82,6 @@ InputManager::~InputManager()
 
 void InputManager::OpenInput()
 {
-
   boost::filesystem::path p ("/dev/input/by-id");
 
   if(boost::filesystem::exists(p)) {
@@ -87,29 +91,11 @@ void InputManager::OpenInput()
 
     std::for_each(begin, end, [this] ( auto&& itr ) {
         auto device = std::make_shared<InputDevice>(io_service_, server_);
-        device->Open(itr.path().string());
-        device_list_.emplace_back(device);
+        auto result = device->Open(itr.path().string());
+        if( result == true ) 
+          device_list_.emplace_back(device);
       });
   }
-  
-  // for (boost::filesystem::directory_iterator itr(p); itr != end_itr; ++itr)
-  //   {
-  //       // If it's not a directory, list it. If you want to list directories too, just remove this check.
-  //       if (is_regular_file(itr->path())) {
-  //           // assign current file name to current_file and echo it out to the console.
-  //           string current_file = itr->path().string();
-  //           cout << current_file << endl;
-  //       }
-  //   }
-
-
-  // std::string key_path = "/dev/input/event0";
-  // auto key_fd = open(key_path.c_str(), O_RDONLY);
-  // key_desc_.assign(key_fd);
-  // boost::asio::async_read(key_desc_,
-  //                         boost::asio::buffer(&input_event_, sizeof(input_event_)),
-  //                         boost::bind(&Server::OnKeyEvent,
-  //                                     this, boost::asio::placeholders::error));
 }
 
 }  // wm
