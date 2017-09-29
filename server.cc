@@ -55,7 +55,7 @@ void Server::Run()
 
 void Server::Paint()
 {
-  cursor_.Paint(drm_info_);
+  
   for (int j=0;j<drm_info_.cnt_;j++) {
     int col=0x00ffffff;
     for (int y=0;y<drm_info_.fb_h_[j];y++)
@@ -68,6 +68,8 @@ void Server::Paint()
   for_each(session_list_.begin(), session_list_.end(), [this](auto session) {
       session->Paint(drm_info_);
     });
+
+  cursor_.Paint(drm_info_);
 }
 
 Server::~Server()

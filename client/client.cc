@@ -121,7 +121,7 @@ void Client::OnKeyEvent(input_event& event)
     } else if ( event.code == KEY_RIGHT ) {
       ++widget_.x_;
       SendInitMessage();
-    } 
+    }
   }
 }
 

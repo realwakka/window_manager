@@ -44,7 +44,6 @@ bool InputDevice::Open(const std::string& path)
                                         this, boost::asio::placeholders::error));
     return true;
   }
-
   
   // if(HasSuffix(path, "event-kbd")) {
     
