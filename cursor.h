@@ -1,9 +1,24 @@
 #ifndef REALWAKKA_CURSOR_H_
 #define REALWAKKA_CURSOR_H_
 
+#include <memory>
+
 namespace wm {
 
 class DrmInfo;
+class Cursor;
+
+class CursorDelegate
+{
+ public:
+  virtual void Paint(const Cursor& cursor, DrmInfo& drm) = 0;
+};
+
+class NormalCursorDelegate : public CursorDelegate
+{
+ public:
+  void Paint(const Cursor& cursor, DrmInfo& drm) override;
+};
 
 class Cursor
 {
@@ -22,7 +37,14 @@ class Cursor
  private:
   int x_;
   int y_;
+  std::unique_ptr<CursorDelegate> delegate_;
 };
+
+enum class CursorType
+{
+  kNormal,
+};
+
 
 
 }  // wm
