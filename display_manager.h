@@ -7,15 +7,13 @@
 #include <vector>
 #include <memory>
 
-
-
 namespace wm {
 
 class Framebuffer
 {
  public:
   static std::shared_ptr<Framebuffer> Create(const std::string& path);
-  virtual ~Framebuffer();
+  ~Framebuffer();
 
   void SetColor(int x, int y);
 

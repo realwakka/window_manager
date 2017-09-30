@@ -108,19 +108,29 @@ void Client::OnKeyEvent(input_event& event)
   std::cout << event.code << std::endl;
   std::cout << event.value << std::endl;
 
-  if( event.value == 1 ) {
-    if( event.code == KEY_UP ) {
-      --widget_.y_;
-      SendInitMessage();
-    } else if ( event.code == KEY_DOWN ) {
-      ++widget_.y_;
-      SendInitMessage();
-    } else if ( event.code == KEY_LEFT ) {
-      --widget_.x_;
-      SendInitMessage();
-    } else if ( event.code == KEY_RIGHT ) {
-      ++widget_.x_;
-      SendInitMessage();
+  if( event.type == 4 ) {
+    if( event.value == 1 ) {
+      if( event.code == KEY_UP ) {
+        --widget_.y_;
+        SendInitMessage();
+      } else if ( event.code == KEY_DOWN ) {
+        ++widget_.y_;
+        SendInitMessage();
+      } else if ( event.code == KEY_LEFT ) {
+        --widget_.x_;
+        SendInitMessage();
+      } else if ( event.code == KEY_RIGHT ) {
+        ++widget_.x_;
+        SendInitMessage();
+      }
+    }
+  }
+
+  else if( event.type == 2 ) {
+    if( event.value == 1 ) {
+      
+    } else if( event.value == 0 ) {
+
     }
   }
 }

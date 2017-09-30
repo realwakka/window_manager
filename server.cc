@@ -44,8 +44,32 @@ void Server::OnInputEvent(input_event& event)
     if( session_list_.empty() == false ) {
       session_list_.front()->OnKey(event);
     }
-  
   }
+
+
+
+  if( event.type == 4 ) {
+    if( event.value == 1 ) {
+      if( event.code == KEY_UP ) {
+        
+      } else if ( event.code == KEY_DOWN ) {
+        
+      } else if ( event.code == KEY_LEFT ) {
+        
+      } else if ( event.code == KEY_RIGHT ) {
+        
+      }
+    }
+  }
+
+  else if( event.type == 2 ) {
+    if( event.value == 1 ) {
+      
+    } else if( event.value == 0 ) {
+
+    }
+  }
+  
 }
 
 void Server::Run()

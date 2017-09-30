@@ -76,6 +76,7 @@ InputManager::InputManager(boost::asio::io_service& io_service, Server& server)
     : io_service_(io_service),
       server_(server)
 {}
+
 InputManager::~InputManager()
 {}
 
