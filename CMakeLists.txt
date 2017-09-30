@@ -16,6 +16,7 @@ add_library(el_server SHARED
   session.cc
   input_manager.cc
   cursor.cc
+  display_manager.cc
   )
 target_link_libraries(el_server el_drm boost_system pthread boost_filesystem boost_mpi rt)
 

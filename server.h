@@ -9,6 +9,7 @@
 
 #include "session.h"
 #include "input_manager.h"
+#include "display_manager.h"
 #include "cursor.h"
 #include <linux/input.h>
 
@@ -71,6 +72,7 @@ class Server
 
   DrmInfo drm_info_;
   InputManager input_manager_;
+  DisplayManager display_manager_;
   Cursor cursor_;
 
   //boost::asio::posix::stream_descriptor key_desc_;
