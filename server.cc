@@ -1,5 +1,6 @@
 #include "server.h"
 
+
 extern "C" {
 #include "drm/kms.h"
 }
@@ -46,8 +47,6 @@ void Server::OnInputEvent(input_event& event)
     }
   }
 
-
-
   if( event.type == 4 ) {
     if( event.value == 1 ) {
       if( event.code == KEY_UP ) {
@@ -64,12 +63,11 @@ void Server::OnInputEvent(input_event& event)
 
   else if( event.type == 2 ) {
     if( event.value == 1 ) {
-      
+      cursor_.SetX(cursor_.GetX() + event.code);
     } else if( event.value == 0 ) {
-
+      cursor_.SetY(cursor_.GetY() + event.code);
     }
   }
-  
 }
 
 void Server::Run()
@@ -79,7 +77,12 @@ void Server::Run()
 
 void Server::Paint()
 {
+  //using framebuffer display...
+  auto buffer = display_manager_.GetBuffer();
+
   
+  
+  //using drm...
   for (int j=0;j<drm_info_.cnt_;j++) {
     int col=0x00ffffff;
     for (int y=0;y<drm_info_.fb_h_[j];y++)
@@ -99,6 +102,7 @@ void Server::Paint()
 Server::~Server()
 {
 }
+
 
 
 void Server::SetTimer()

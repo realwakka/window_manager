@@ -23,6 +23,7 @@ struct DrmInfo
   int cnt_;
 };
 
+
 // class Cursor
 // {
 //  public:
@@ -74,6 +75,8 @@ class Server
   InputManager input_manager_;
   DisplayManager display_manager_;
   Cursor cursor_;
+
+  
 
   //boost::asio::posix::stream_descriptor key_desc_;
   //input_event input_event_;

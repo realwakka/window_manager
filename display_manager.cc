@@ -26,19 +26,22 @@ std::shared_ptr<Framebuffer> Framebuffer::Create(const std::string& path)
 void Framebuffer::Init()
 {
   fd_ = open(path_.c_str() ,O_RDWR);
+  if( fd_ > 0 ) {
+    ioctl(fd_, FBIOGET_VSCREENINFO, &finfo_);
+    ioctl(fd_, FBIOGET_FSCREENINFO, &vinfo_);
 
-  ioctl(fd_, FBIOGET_VSCREENINFO, &finfo_);
-  ioctl(fd_, FBIOGET_FSCREENINFO, &vinfo_);
-
-  //auto screensize = vinfo.yres_virtual * finfo.line_length;
-  auto screensize = vinfo_.xres * vinfo_.yres * vinfo_.bits_per_pixel / 8;
-  
-  fbp_ = mmap(0, screensize, PROT_READ | PROT_WRITE, MAP_SHARED, fd_, (off_t)0);
+    //auto screensize = vinfo.yres_virtual * finfo.line_length;
+    auto screensize = vinfo_.xres * vinfo_.yres * vinfo_.bits_per_pixel / 8;
+    fbp_ = mmap(0, screensize, PROT_READ | PROT_WRITE, MAP_SHARED, fd_, (off_t)0);
+  }
 }
 
 Framebuffer::Framebuffer(const std::string& path)
     : path_(path),
-      fd_(0)
+      fd_(0),
+      x_(0),
+      y_(0),
+      fbp_(nullptr)
 {
 
 }
@@ -64,10 +67,23 @@ DisplayManager::DisplayManager()
     std::for_each(begin, end, [this] ( auto&& itr ) {
         auto path_str = itr.path().string();
         if( path_str.length() > 2 && path_str.substr(2) == "fb" ) {
-          framebuffer_list_.emplace_back(Framebuffer::Create(path_str));
+          auto fb = Framebuffer::Create(path_str);
+          if( fb ) 
+            framebuffer_list_.emplace_back(fb);
         }
       });
   }
+
+
+  int maxwidth = 0;
+  int maxheight = 0;
+  for( auto&& framebuffer : framebuffer_list_ ) {
+    maxwidth = std::max(framebuffer.GetWidth(), maxwidth);
+    maxheight = std::max(framebuffer.GetHeight(), maxheight);
+  }
+
+  buffer_.reset(new BufferInfo(maxwidth, maxheight));
+  
 }
 
 DisplayManager::~DisplayManager()

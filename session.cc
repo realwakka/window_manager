@@ -98,6 +98,8 @@ void Session::Paint(DrmInfo& drm_info)
   }
 }
 
+
+
 void Session::OnKey(input_event& ev)
 {
   Message msg;

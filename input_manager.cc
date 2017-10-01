@@ -61,8 +61,6 @@ void InputDevice::OnRead(boost::system::error_code error)
   std::cout << input_event_.type << std::endl;
   std::cout << input_event_.code << std::endl;
   std::cout << input_event_.value << std::endl;
-
-
   
   server_.OnInputEvent(input_event_);
   
