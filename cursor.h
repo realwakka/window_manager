@@ -2,6 +2,7 @@
 #define REALWAKKA_CURSOR_H_
 
 #include <memory>
+#include "display_manager.h"
 
 namespace wm {
 
@@ -11,13 +12,15 @@ class Cursor;
 class CursorDelegate
 {
  public:
-  virtual void Paint(const Cursor& cursor, DrmInfo& drm) = 0;
+  //virtual void Paint(const Cursor& cursor, DrmInfo& drm) = 0;
+  virtual void Paint(const Cursor& cursor, BufferInfo& buffer) = 0;
 };
 
 class NormalCursorDelegate : public CursorDelegate
 {
  public:
-  void Paint(const Cursor& cursor, DrmInfo& drm) override;
+  //void Paint(const Cursor& cursor, DrmInfo& drm) override;
+  void Paint(const Cursor& cursor, BufferInfo& buffer) override;
 };
 
 class Cursor
@@ -31,7 +34,8 @@ class Cursor
   void SetY(int y) { y_ = y; }
   int GetY() const { return y_; }
 
-  void Paint(DrmInfo& drm);
+  //void Paint(DrmInfo& drm);
+  void Paint(BufferInfo& drm);
   
 
  private:

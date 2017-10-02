@@ -7,11 +7,11 @@
 
 #include "message/message.h"
 
-
 namespace wm {
 
 struct DrmInfo;
 class Server;
+class BufferInfo;
 
 class WidgetInfo
 {
@@ -38,6 +38,7 @@ class Session
   void OnRead(Message& msg);
 
   void Paint(DrmInfo& drm_info);
+  void Paint(BufferInfo& buffer);
   void OnKey(input_event& ev);
 
   std::string GetUuid() const { return uuid_; }

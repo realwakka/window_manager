@@ -6,21 +6,19 @@ namespace wm {
 
 Cursor::Cursor() : x_(0), y_(0), delegate_(new NormalCursorDelegate) {}
 
-void Cursor::Paint(DrmInfo& drm)
+void Cursor::Paint(BufferInfo& buffer)
 {
-  delegate_->Paint(*this, drm);
+  delegate_->Paint(*this, buffer);
 }
 
-void NormalCursorDelegate::Paint(const Cursor& cursor, DrmInfo& drm)
+void NormalCursorDelegate::Paint(const Cursor& cursor, BufferInfo& buffer)
 {
-  for (int j=0;j<drm.cnt_;j++) {
-    int col=0x0;
-    for (int y=cursor.GetY();y<10;y++)
-      for (int x=cursor.GetX();x<10;x++) {
-        int location=y*(drm.fb_w_[j]) + x;
-        *(((uint32_t*)drm.fb_base_[j])+location)=col;
-      }
-  }
+  int col=0x0;
+  for (int y=cursor.GetY();y<10;y++)
+    for (int x=cursor.GetX();x<10;x++) {
+      int location=y*(buffer.width()) + x;
+      *((buffer.buffer())+location)=col;
+    }
 }
   
 

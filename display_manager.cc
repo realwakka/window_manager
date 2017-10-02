@@ -78,8 +78,8 @@ DisplayManager::DisplayManager()
   int maxwidth = 0;
   int maxheight = 0;
   for( auto&& framebuffer : framebuffer_list_ ) {
-    maxwidth = std::max(framebuffer.GetWidth(), maxwidth);
-    maxheight = std::max(framebuffer.GetHeight(), maxheight);
+    maxwidth = std::max(framebuffer->GetWidth(), maxwidth);
+    maxheight = std::max(framebuffer->GetHeight(), maxheight);
   }
 
   buffer_.reset(new BufferInfo(maxwidth, maxheight));

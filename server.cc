@@ -79,24 +79,28 @@ void Server::Paint()
 {
   //using framebuffer display...
   auto buffer = display_manager_.GetBuffer();
-
-  
-  
-  //using drm...
-  for (int j=0;j<drm_info_.cnt_;j++) {
-    int col=0x00ffffff;
-    for (int y=0;y<drm_info_.fb_h_[j];y++)
-      for (int x=0;x<drm_info_.fb_w_[j];x++) {
-        int location=y*(drm_info_.fb_w_[j]) + x;
-        *(((uint32_t*)drm_info_.fb_base_[j])+location)=col;
-      }
+  for( auto session : session_list_ ) {
+    session->Paint(*buffer);
   }
 
-  for_each(session_list_.begin(), session_list_.end(), [this](auto session) {
-      session->Paint(drm_info_);
-    });
+  cursor_.Paint(*buffer);
 
-  cursor_.Paint(drm_info_);
+  
+  //using drm...
+  // for (int j=0;j<drm_info_.cnt_;j++) {
+  //   int col=0x00ffffff;
+  //   for (int y=0;y<drm_info_.fb_h_[j];y++)
+  //     for (int x=0;x<drm_info_.fb_w_[j];x++) {
+  //       int location=y*(drm_info_.fb_w_[j]) + x;
+  //       *(((uint32_t*)drm_info_.fb_base_[j])+location)=col;
+  //     }
+  // }
+
+  // for_each(session_list_.begin(), session_list_.end(), [this](auto session) {
+  //     session->Paint(drm_info_);
+  //   });
+
+  // cursor_.Paint(drm_info_);
 }
 
 Server::~Server()

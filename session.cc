@@ -76,6 +76,23 @@ void Session::HandleWrite(const boost::system::error_code& error)
 {
   //std::cout << "writed" << std::endl;
 }
+void Session::Paint(BufferInfo& buffer)
+{
+  boost::interprocess::mapped_region region(shm_obj_, boost::interprocess::read_only);
+  auto ptr = reinterpret_cast<uint32_t*>(region.get_address());
+  if( ptr != nullptr ) {
+    for (int y=0 ; y<widget_info_.height_ ;y++)
+      for (int x=0 ; x<widget_info_.width_ ; x++) {
+        int sx = x+widget_info_.x_;
+        int sy = y+widget_info_.y_;
+          
+        uint32_t col = ptr[y*widget_info_.width_+x];
+        int location=sy*(buffer.width()) + sx;
+        *((buffer.buffer())+location)=col;
+      }
+  }
+
+}
 
 void Session::Paint(DrmInfo& drm_info)
 {
