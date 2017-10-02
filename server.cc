@@ -83,7 +83,9 @@ void Server::Paint()
     session->Paint(*buffer);
   }
 
-  cursor_.Paint(*buffer);
+  display_manager_.SwapBuffer();
+
+  //cursor_.Paint(*buffer);
 
   
   //using drm...

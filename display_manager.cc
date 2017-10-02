@@ -50,6 +50,27 @@ Framebuffer::~Framebuffer()
 {
 }
 
+void Framebuffer::WriteBuffer(const BufferInfo& buffer_info)
+{
+  if( vinfo_.bits_per_pixel == 16 ) {
+    auto buffer = buffer_info.buffer();
+    for( auto x = 0 ; x < vinfo_.xres ; ++x ) {
+      for( auto y = 0 ; x < vinfo_.yres ; ++x ) {
+        auto color = buffer[y * buffer_info.width() + x];
+        auto a = ((uint8_t*)&color)[0];
+        auto r = ((uint8_t*)&color)[1];
+        auto g = ((uint8_t*)&color)[2];
+        auto b = ((uint8_t*)&color)[3];
+        uint16_t t = r<<11 | g << 5 | b;
+        auto location = (x+vinfo_.xoffset) * (vinfo_.bits_per_pixel/8) +
+                        (y+vinfo_.yoffset) * finfo_.line_length;
+
+        *((uint16_t*)(fbp_ + location)) = t;
+      }
+    }
+  }
+}
+
 
 DisplayManager::DisplayManager()
     : tty_fd_(0)
@@ -57,7 +78,7 @@ DisplayManager::DisplayManager()
   tty_fd_ = open("/dev/tty0", O_RDWR);
   ioctl(tty_fd_,KDSETMODE,KD_GRAPHICS);
   
-  boost::filesystem::path p ("/dev/");
+  boost::filesystem::path p("/dev");
 
   if(boost::filesystem::exists(p)) {
     
@@ -66,10 +87,13 @@ DisplayManager::DisplayManager()
 
     std::for_each(begin, end, [this] ( auto&& itr ) {
         auto path_str = itr.path().string();
-        if( path_str.length() > 2 && path_str.substr(2) == "fb" ) {
+        auto filename = itr.path().filename().string();
+        
+        if( filename.length() > 2 && filename.substr(0, 2) == "fb" ) {
           auto fb = Framebuffer::Create(path_str);
           if( fb ) 
             framebuffer_list_.emplace_back(fb);
+
         }
       });
   }
@@ -89,6 +113,13 @@ DisplayManager::DisplayManager()
 DisplayManager::~DisplayManager()
 {
   ioctl(tty_fd_,KDSETMODE,KD_TEXT);
+}
+
+void DisplayManager::SwapBuffer()
+{
+  for( auto framebuffer : framebuffer_list_ ) {
+    framebuffer->WriteBuffer(*buffer_);
+  }
 }
 
 }  // wm

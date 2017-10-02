@@ -23,6 +23,7 @@ class BufferInfo
   int width() const { return width_; }
   int height() const { return height_; }
   uint32_t* buffer() { return buffer_; }
+  const uint32_t* buffer() const { return buffer_; }
   
  private:
   int width_;
@@ -45,6 +46,8 @@ class Framebuffer
   int GetHeight() const { return vinfo_.yres; }
 
   int GetBpp() const { return vinfo_.bits_per_pixel; }
+
+  void WriteBuffer(const BufferInfo& buffer_info);
 
 
  private:
@@ -72,6 +75,7 @@ class DisplayManager
   ~DisplayManager();
 
   BufferInfo* GetBuffer() { return buffer_.get(); }
+  void SwapBuffer();
   
  private:
   std::vector<std::shared_ptr<Framebuffer>> framebuffer_list_;

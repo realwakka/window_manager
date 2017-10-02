@@ -8,6 +8,7 @@
 #include <boost/uuid/uuid_generators.hpp>
 
 #include <boost/interprocess/mapped_region.hpp>
+#include <boost/interprocess/permissions.hpp>
 
 #include "server.h"
 
@@ -19,8 +20,17 @@ Session::Session(boost::asio::io_service& io_service, Server& server)
       timer_(io_service, boost::posix_time::seconds(1)),
       uuid_(boost::uuids::to_string(boost::uuids::random_generator()())),
       server_(server),
-      shm_obj_( boost::interprocess::create_only, uuid_.c_str(), boost::interprocess::read_write )
+      shm_obj_()
 {
+
+  auto permission = boost::interprocess::permissions();
+  permission.set_unrestricted();
+  shm_obj_ = boost::interprocess::shared_memory_object(
+      boost::interprocess::create_only,
+      uuid_.c_str(),
+      boost::interprocess::read_write,
+      permission );
+
 }
 
 
@@ -78,7 +88,9 @@ void Session::HandleWrite(const boost::system::error_code& error)
 }
 void Session::Paint(BufferInfo& buffer)
 {
-  boost::interprocess::mapped_region region(shm_obj_, boost::interprocess::read_only);
+  if( widget_info_.height_ == 0 && widget_info_.width_ == 0 )
+    return;
+  boost::interprocess::mapped_region region(shm_obj_, boost::interprocess::read_write);
   auto ptr = reinterpret_cast<uint32_t*>(region.get_address());
   if( ptr != nullptr ) {
     for (int y=0 ; y<widget_info_.height_ ;y++)
@@ -87,8 +99,18 @@ void Session::Paint(BufferInfo& buffer)
         int sy = y+widget_info_.y_;
           
         uint32_t col = ptr[y*widget_info_.width_+x];
+        int a = ((uint8_t *)&col)[0];
+        int r = ((uint8_t *)&col)[1];
+        int g = ((uint8_t *)&col)[2];
+        int b = ((uint8_t *)&col)[3];
+
+        unsigned short int t = r<<11 | g << 5 | b;
+        
         int location=sy*(buffer.width()) + sx;
-        *((buffer.buffer())+location)=col;
+        *(((uint32_t*)ptr)+location)=col;
+          
+        //*((unsigned short int*)(ptr + location)) = t;
+        //*((buffer.buffer())+location)=t;
       }
   }
 
