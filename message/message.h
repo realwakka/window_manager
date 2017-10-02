@@ -11,10 +11,11 @@ namespace wm {
 enum class MessageType
 {
   InitWidgetMessage = 1,
-  PaintRequest = 2,
-  PaintResponse = 3,
-  Keyboard = 4,
-  SchedulePaint = 5,
+  PaintRequest,
+  PaintResponse,
+  Keyboard,
+  SchedulePaint,
+  MouseEvent,
 };
 
 struct MessageHeader
