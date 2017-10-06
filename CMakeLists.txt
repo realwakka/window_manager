@@ -6,8 +6,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-
-include_directories(${CMAKE_SOURCE_DIR})
+include_directories(${CMAKE_SOURCE_DIR} /usr/local/include/libdrm)
 
 set (CMAKE_CXX_STANDARD 14)
 
@@ -18,7 +17,7 @@ add_library(el_server SHARED
   cursor.cc
   display_manager.cc
   )
-target_link_libraries(el_server el_drm boost_system pthread boost_filesystem boost_mpi rt)
+target_link_libraries(el_server el_drm boost_system pthread boost_filesystem rt)
 
 add_executable(server_test main.cc)
 target_link_libraries(server_test el_server)

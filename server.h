@@ -1,6 +1,8 @@
 #ifndef REALWAKKA_EVENT_LOOP_SERVER_H_
 #define REALWAKKA_EVENT_LOOP_SERVER_H_
 
+#include <linux/input.h>
+
 #include <iostream>
 #include <vector>
 #include <boost/asio.hpp>
@@ -11,7 +13,7 @@
 #include "input_manager.h"
 #include "display_manager.h"
 #include "cursor.h"
-#include <linux/input.h>
+#include "drm/drm_setting.h"
 
 namespace wm {
 
@@ -74,6 +76,7 @@ class Server
   DrmInfo drm_info_;
   InputManager input_manager_;
   DisplayManager display_manager_;
+  DirectRenderingManager drm_;
   Cursor cursor_;
 
   
