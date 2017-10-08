@@ -11,15 +11,15 @@ namespace wm {
 
 namespace {
 
-const std::string kNode = "dev/dri/card0";
+const std::string kNode = "/dev/dri/card1";
 
 }
 
 DirectRenderingManager::DirectRenderingManager()
 {
   fd_ = open(kNode.c_str(), O_RDWR | O_CLOEXEC);
-  drmDropMaster(fd_);
-  drmSetMaster(fd_);
+  auto res = drmDropMaster(fd_);
+  res = drmSetMaster(fd_);
 
   uint64_t has_dumb = 0;
   if( drmGetCap(fd_, DRM_CAP_DUMB_BUFFER, &has_dumb) < 0 ||
@@ -34,7 +34,7 @@ DirectRenderingManager::DirectRenderingManager()
   for( auto device : device_list_ ) {
     device->saved_crtc_ = drmModeGetCrtc(fd_, device->crtc_);
     //buf = &device->bufs[iter->front_buf];
-    auto&& buf = device->buffer_[device->front_buffer_];
+    auto&& buf = device->buffer_[0];
     auto ret = drmModeSetCrtc(fd_, device->crtc_, buf.fb_, 0, 0,
                          &device->conn_, 1, &device->mode_);
     if (ret)
@@ -49,7 +49,7 @@ void DirectRenderingManager::Prepare()
   auto res = drmModeGetResources(fd_);
 
   if( !res ) {
-    
+    exit(-1);
   }
 
   for( int i=0 ; i < res->count_connectors; ++i ) {
@@ -179,6 +179,8 @@ int DirectRenderingManager::SetupDevice(int fd, drmModeRes* res, drmModeConnecto
   device->buffer_[0].height_ = conn->modes[0].vdisplay;
   device->buffer_[1].width_ = conn->modes[0].hdisplay;
   device->buffer_[1].height_ = conn->modes[0].vdisplay;
+
+  FindCRTC(fd, res, conn, device);
 
   auto ret = CreateFB(fd, &device->buffer_[0]);
   if (ret) {

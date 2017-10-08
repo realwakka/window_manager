@@ -11,6 +11,8 @@ namespace wm {
 class DRMBuffer
 {
  public:
+  DRMBuffer() : width_(0), height_(0), stride_(0), size_(0), handle_(0), map_(nullptr), fb_(0) {}
+  
   uint32_t width_;
   uint32_t height_;
   uint32_t stride_;
@@ -23,6 +25,7 @@ class DRMBuffer
 class DRMDevice
 {
  public:
+  DRMDevice() : front_buffer_(0), conn_(0), crtc_(0) {}
   uint32_t front_buffer_;
   DRMBuffer buffer_[2];
   
