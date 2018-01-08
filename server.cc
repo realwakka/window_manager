@@ -1,9 +1,9 @@
 #include "server.h"
 
 
-extern "C" {
-#include "drm/kms.h"
-}
+// extern "C" {
+// #include "drm/kms.h"
+// }
 
 namespace wm {
 
@@ -15,9 +15,9 @@ Server::Server()
       input_manager_(io_service_, *this)
 {
   StartAccept();
-  drm_info_.cnt_ = KernelModelSetting(drm_info_.fb_base_,
-                                      drm_info_.fb_w_,
-                                      drm_info_.fb_h_);
+  // drm_info_.cnt_ = KernelModelSetting(drm_info_.fb_base_,
+  //                                     drm_info_.fb_w_,
+  //                                     drm_info_.fb_h_);
 
   SetTimer();
   input_manager_.OpenInput();
@@ -78,12 +78,12 @@ void Server::Run()
 void Server::Paint()
 {
   //using framebuffer display...
-  auto buffer = display_manager_.GetBuffer();
-  for( auto session : session_list_ ) {
-    session->Paint(*buffer);
-  }
+  // auto buffer = display_manager_.GetBuffer();
+  // for( auto session : session_list_ ) {
+  //   session->Paint(*buffer);
+  // }
 
-  display_manager_.SwapBuffer();
+  // display_manager_.SwapBuffer();
 
   //cursor_.Paint(*buffer);
 

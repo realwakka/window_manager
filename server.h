@@ -75,7 +75,7 @@ class Server
 
   DrmInfo drm_info_;
   InputManager input_manager_;
-  DisplayManager display_manager_;
+  //DisplayManager display_manager_;
   DirectRenderingManager drm_;
   Cursor cursor_;
 

@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-include_directories(${CMAKE_SOURCE_DIR} /usr/local/include/libdrm)
+include_directories(${CMAKE_SOURCE_DIR} /usr/include/libdrm)
 
 set (CMAKE_CXX_STANDARD 14)
 

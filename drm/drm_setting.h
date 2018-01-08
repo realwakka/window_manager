@@ -6,34 +6,78 @@
 #include <xf86drm.h>
 #include <xf86drmMode.h>
 
+#include <gbm.h>
+
+#include <GLES2/gl2.h>
+#include <GLES2/gl2ext.h>
+#include <EGL/egl.h>
+#include <EGL/eglext.h>
+
 namespace wm {
 
-class DRMBuffer
+class GbmDevice
 {
  public:
-  DRMBuffer() : width_(0), height_(0), stride_(0), size_(0), handle_(0), map_(nullptr), fb_(0) {}
+  GbmDevice(gbm_device* device, gbm_surface* surface1, gbm_surface* surface2)
+      : device_(device), surface1_(surface1), surface2_(surface2) {}
   
-  uint32_t width_;
-  uint32_t height_;
-  uint32_t stride_;
-  uint32_t size_;
-  uint32_t handle_;
-  uint8_t* map_;
-  uint32_t fb_;
+  gbm_surface* GetSurface1() { return surface1_; }
+  gbm_surface* GetSurface2() { return surface2_; }
+  gbm_device* GetDevice() { return device_; }
+  
+ private:
+  gbm_device* device_;
+  gbm_surface* surface1_;
+  gbm_surface* surface2_;
+
+};
+
+class EglDevice
+{
+ public:
+  EglDevice(EGLDisplay display, EGLConfig config, EGLContext context, EGLSurface surface)
+      : display_(display),
+        config_(config),
+        context_(context),
+        surface_(surface)
+  {}
+
+  EGLDisplay GetDisplay() { return display_; }
+  EGLConfig GetConfig() { return config_; }
+  EGLContext GetContext() { return context_; }
+  EGLSurface GetSurface() { return surface_; }
+  
+ private:
+  EGLDisplay display_;
+  EGLConfig config_;
+  EGLContext context_;
+  EGLSurface surface_;
+
+};
+
+class DrmFb
+{
+ public:
+  DrmFb(gbm_bo* bo, uint32_t fb_id) : bo_(bo), fb_id_(fb_id) {}
+
+  gbm_bo* GetGbmBo() { return bo_; }
+  uint32_t GetFbId() { return fb_id_; }
+
+ private:
+  gbm_bo* bo_;
+  uint32_t fb_id_;
 };
 
 class DRMDevice
 {
  public:
-  DRMDevice() : front_buffer_(0), conn_(0), crtc_(0) {}
-  uint32_t front_buffer_;
-  DRMBuffer buffer_[2];
-  
+  DRMDevice() : conn_(0), crtc_(0) {}
   drmModeModeInfo mode_;
   uint32_t conn_;
   uint32_t crtc_;
-  drmModeCrtc* saved_crtc_;
+
 };
+  
 class DirectRenderingManager 
 {
  public:
@@ -41,7 +85,6 @@ class DirectRenderingManager
   void Prepare(); 
   int SetupDevice(int fd, drmModeRes* res, drmModeConnector* conn, std::shared_ptr<DRMDevice> device);
   int FindCRTC(int fd, drmModeRes* res, drmModeConnector* conn, std::shared_ptr<DRMDevice> device);
-  int CreateFB(int fd, DRMBuffer* buf);
 
  private:
   int fd_;
