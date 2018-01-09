@@ -8,8 +8,17 @@
 
 #include <gbm.h>
 
-#include <GLES2/gl2.h>
-#include <GLES2/gl2ext.h>
+#define EGL_EGLEXT_PROTOTYPES
+#define GL_GLEXT_PROTOTYPES
+
+#include <GL/gl.h>
+#include <EGL/egl.h>
+#include <EGL/eglext.h>
+
+
+// #include <GLES2/gl2.h>
+// #include <GLES2/gl2ext.h>
+
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
 
@@ -18,18 +27,18 @@ namespace wm {
 class GbmDevice
 {
  public:
-  GbmDevice(gbm_device* device, gbm_surface* surface1, gbm_surface* surface2)
-      : device_(device), surface1_(surface1), surface2_(surface2) {}
+  GbmDevice(gbm_device* device, gbm_surface* surface, std::array<gbm_bo*, 2> bo)
+      : device_(device), surface_(surface), bo_(bo) {}
   
-  gbm_surface* GetSurface1() { return surface1_; }
-  gbm_surface* GetSurface2() { return surface2_; }
+  gbm_surface* GetSurface() { return surface_; }
   gbm_device* GetDevice() { return device_; }
+  gbm_bo* GetBo(int i) { return bo_[i]; }
   
  private:
   gbm_device* device_;
-  gbm_surface* surface1_;
-  gbm_surface* surface2_;
-
+  gbm_surface* surface_;
+  std::array<gbm_bo*, 2> bo_;
+  //gbm_bo* bo_[2];
 };
 
 class EglDevice

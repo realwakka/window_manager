@@ -12,18 +12,77 @@
 #include <string.h>
 #include <stdlib.h>
 
-namespace wm {
+#include <cairo.h>
+#include <cairo-gl.h>
 
+namespace wm {
 namespace {
 
 const std::string kNode = "/dev/dri/card0";
+
+
+void DrawSomething()
+{
+  static const GLfloat g_vertex_buffer_data[] = {
+    -1.0f, -1.0f, 0.0f,
+    1.0f, -1.0f, 0.0f,
+    0.0f,  1.0f, 0.0f,
+  };
+  // 이것이 우리의 버텍스 버퍼를 가리킵니다.
+  GLuint vertexbuffer;
+  // 버퍼를 하나 생성합니다. vertexbuffer 에 결과 식별자를 넣습니다
+  glGenBuffers(1, &vertexbuffer);
+  // 아래의 명령어들은 우리의 "vertexbuffer" 버퍼에 대해서 다룰겁니다
+  glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+  // 우리의 버텍스들을 OpenGL로 넘겨줍니다
+  glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
+
+  // 버퍼의 첫번째 속성값(attribute) : 버텍스들
+  glEnableVertexAttribArray(0);
+  glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+  glVertexAttribPointer(
+      0,                  // 0번째 속성(attribute). 0 이 될 특별한 이유는 없지만, 쉐이더의 레이아웃(layout)와 반드시 맞추어야 합니다.
+      3,                  // 크기(size)
+      GL_FLOAT,           // 타입(type)
+      GL_FALSE,           // 정규화(normalized)?
+      0,                  // 다음 요소 까지 간격(stride)
+      (void*)0            // 배열 버퍼의 오프셋(offset; 옮기는 값)
+                        );
+  // 삼각형 그리기!
+  glDrawArrays(GL_TRIANGLES, 0, 3); // 버텍스 0에서 시작해서; 총 3개의 버텍스로 -> 하나의 삼각형
+  glDisableVertexAttribArray(0);
+}
+
+void DrawSomeText(EglDevice& egl, int width, int height, float color)
+{
+  auto device = cairo_egl_device_create(egl.GetDisplay(), egl.GetContext());
+  auto surface = 
+      cairo_gl_surface_create_for_egl (device, egl.GetSurface(), width, height);
+                                       
+  
+  auto cr = cairo_create (surface);
+
+  cairo_set_source_rgb(cr, color, color, color);
+
+  cairo_select_font_face(cr, "Purisa",
+                         CAIRO_FONT_SLANT_NORMAL,
+                         CAIRO_FONT_WEIGHT_BOLD);
+
+  cairo_set_font_size(cr, 100);
+
+  cairo_move_to(cr, 200, 300);
+  cairo_show_text(cr, "It's cairo graphic!!");
+
+  cairo_gl_surface_swapbuffers (surface);
+
+}
 
 void PageFlipHandler(int fd, unsigned int frame,
                      unsigned int sec, unsigned int usec, void *data)
 {
   /* suppress 'unused parameter' warnings */
   (void)fd, (void)frame, (void)sec, (void)usec;
-  std::cout << "PageFlipHandler" << std::endl;
+  //std::cout << "PageFlipHandler" << std::endl;
   
   int* waiting_for_flip = (int*)data;
   *waiting_for_flip = 0;
@@ -39,6 +98,7 @@ DrmFb GetDrmFbFromBo(gbm_bo *bo)
 
   auto handle = gbm_bo_get_handle(bo).u32;
   auto stride = gbm_bo_get_stride(bo);
+  
   uint32_t fb = 0;
   auto ret = drmModeAddFB(drm_fd, width, height, 24, 32, stride,
 			  handle, &fb);
@@ -50,33 +110,49 @@ DrmFb GetDrmFbFromBo(gbm_bo *bo)
 
 void Run(GbmDevice& gbm, EglDevice& egl, DRMDevice& drm)
 {
-
   eglSwapBuffers(egl.GetDisplay(), egl.GetSurface());
-  auto bo = gbm_surface_lock_front_buffer(gbm.GetSurface1());
-  auto drm_fb = GetDrmFbFromBo(bo);
+  auto bo1 = gbm_surface_lock_front_buffer(gbm.GetSurface());
 
-  auto drm_fd = gbm_device_get_fd(gbm_bo_get_device(bo));  
+  auto width = gbm_bo_get_width(bo1);
+  auto height = gbm_bo_get_height(bo1);
+  
+  glViewport(0, 0, width, height);
+
+  //auto bo2 = gbm_surface_lock_front_buffer(gbm.GetSurface2());
+  
+  auto drm_fb = GetDrmFbFromBo(bo1);
+  //auto drm_fb2 = GetDrmFbFromBo(bo2);
+
+  auto drm_fd = gbm_device_get_fd(gbm_bo_get_device(bo1));  
   auto ret = drmModeSetCrtc(drm_fd, drm.crtc_, drm_fb.GetFbId(), 0, 0,
                             &drm.conn_, 1, &drm.mode_);
 
+  int i = 0;
   float color = 0.0f;
 
+  float dx = 0.01f;
+  
   while(true) {
     int waiting_for_flip = 1;
 
-    color += 0.01f;
-    if ( color > 1.0f )
-      color = 0.0f;
-
-    //draw
-    glClearColor(color, color, color, 1.0f);
+    color += dx;
+    if ( color > 1.0f || color < 0)
+      dx = -dx;
     
-    eglSwapBuffers(egl.GetDisplay(), egl.GetSurface());
-    auto next_bo = gbm_surface_lock_front_buffer(gbm.GetSurface1());
-    auto drm_fb = GetDrmFbFromBo(next_bo);
+    // glClearColor(color, color, color, color);
+    // glClear(GL_COLOR_BUFFER_BIT);
+    
+
+    DrawSomeText(egl, width, height, color);
+    
+    // auto swap_result = eglSwapBuffers(egl.GetDisplay(), egl.GetSurface());
+    auto next_bo = gbm_surface_lock_front_buffer(gbm.GetSurface());
+    drm_fb = GetDrmFbFromBo(next_bo);
     ret = drmModePageFlip(drm_fd, drm.crtc_, drm_fb.GetFbId(),
                           DRM_MODE_PAGE_FLIP_EVENT, &waiting_for_flip);
 
+    // ret = drmModeSetCrtc(drm_fd, drm.crtc_, drm_fb.GetFbId(), 0, 0,
+    //                      &drm.conn_, 1, &drm.mode_);
 
     if (ret < 0) {
       std::cout << "PageFlip Failed" << std::endl;
@@ -107,8 +183,8 @@ void Run(GbmDevice& gbm, EglDevice& egl, DRMDevice& drm)
       drmHandleEvent(drm_fd, &evctx);
     }
 
-    gbm_surface_release_buffer(gbm.GetSurface1(), bo);
-    bo = next_bo;
+    gbm_surface_release_buffer(gbm.GetSurface(), bo1);
+    bo1 = next_bo;
   }
 }
 
@@ -119,12 +195,19 @@ GbmDevice InitGbm(int drm_fd, int w, int h)
                                      GBM_FORMAT_XRGB8888,
                                      GBM_BO_USE_SCANOUT | GBM_BO_USE_RENDERING);
 
-  auto surface2 = gbm_surface_create(device, w, h,
-                                     GBM_FORMAT_XRGB8888,
-                                     GBM_BO_USE_SCANOUT | GBM_BO_USE_RENDERING);
+  // auto surface2 = gbm_surface_create(device, w, h,
+  //                                    GBM_FORMAT_XRGB8888,
+  //                                    GBM_BO_USE_SCANOUT | GBM_BO_USE_RENDERING);
+
+  // auto bo1 = gbm_bo_create(device, w, h,
+  //                          GBM_BO_FORMAT_XRGB8888,
+  //                          GBM_BO_USE_SCANOUT | GBM_BO_USE_RENDERING);
+
+  // auto bo2 = gbm_bo_create(device, w, h,
+  //                          GBM_BO_FORMAT_XRGB8888,
+  //                          GBM_BO_USE_SCANOUT | GBM_BO_USE_RENDERING);
   
-  
-  return GbmDevice(device, surface1, surface2);
+  return GbmDevice(device, surface1, {nullptr, nullptr});
 }
 
 EglDevice InitEgl(GbmDevice& gbm_device)
@@ -205,7 +288,7 @@ EglDevice InitEgl(GbmDevice& gbm_device)
 
   auto surface = eglCreateWindowSurface(
       display, config,
-      (EGLNativeWindowType)gbm_device.GetSurface1(),
+      (EGLNativeWindowType)gbm_device.GetSurface(),
       NULL);
 
   
@@ -308,7 +391,6 @@ void DirectRenderingManager::Prepare()
   return;
   
 }
-
 
 int DirectRenderingManager::FindCRTC(int fd, drmModeRes* res, drmModeConnector* conn, std::shared_ptr<DRMDevice> device)
 {
